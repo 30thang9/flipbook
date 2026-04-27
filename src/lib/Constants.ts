@@ -11,9 +11,12 @@ export const DEFAULT_OPTIONS: Required<FlipbookOptions> = {
   startPage: 1,
   showShadows: true,
   displayMode: 'single',
+  animationType: 'curl',
+  curlIntensity: 0.3,
   staggerStep: 0,
   totalPages: 0,
   hasCover: true,
+  showShine: true,
   onInit: () => {},
   onFlip: () => {},
   pageNumbers: {

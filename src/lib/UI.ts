@@ -14,6 +14,10 @@ export class UI {
   setup() {
     this.container.classList.add('canva-flipbook-container');
     this.container.classList.add(`mode-${this.options.displayMode}`);
+    if (this.options.animationType === 'curl') {
+      this.container.classList.add('animation-curl');
+    }
+    this.container.style.setProperty('--flip-duration', `${this.options.duration}ms`);
     this.container.style.width = `${this.options.width}px`;
     this.container.style.height = `${this.options.height}px`;
 
@@ -74,6 +78,16 @@ export class UI {
       const shadow = document.createElement('div');
       shadow.className = 'page-shadow';
       pageEl.appendChild(shadow);
+      
+      const foldShadow = document.createElement('div');
+      foldShadow.className = 'page-fold-shadow';
+      pageEl.appendChild(foldShadow);
+    }
+
+    if (this.options.showShine) {
+      const shine = document.createElement('div');
+      shine.className = 'page-curl-shine';
+      pageEl.appendChild(shine);
     }
 
     if (this.options.pageNumbers.enabled) {
@@ -113,6 +127,16 @@ export class UI {
       const shadow = document.createElement('div');
       shadow.className = 'page-shadow';
       side.appendChild(shadow);
+
+      const foldShadow = document.createElement('div');
+      foldShadow.className = 'page-fold-shadow';
+      side.appendChild(foldShadow);
+    }
+
+    if (this.options.showShine) {
+      const shine = document.createElement('div');
+      shine.className = 'page-curl-shine';
+      side.appendChild(shine);
     }
 
     if (this.options.pageNumbers.enabled) {
@@ -193,8 +217,35 @@ export class UI {
   }
 
   animateTo(pageNumber: number) {
+    const isDouble = this.options.displayMode === 'double';
+    const movingIndices: number[] = [];
+    
+    // Identify which sheets are moving
+    if (isDouble) {
+      // In double mode, typically one sheet moves (2 pages)
+      const prevPage = this.lastUpdatePage;
+      const targetSheet = Math.floor((Math.max(pageNumber, prevPage) - 1) / 2);
+      movingIndices.push(targetSheet);
+    } else {
+      movingIndices.push(pageNumber - 1);
+    }
+
+    movingIndices.forEach(idx => {
+      const el = this.pageElements[idx];
+      if (el) {
+        el.classList.add('is-animating');
+        // Clean up after duration
+        setTimeout(() => {
+          el.classList.remove('is-animating');
+          this.lastUpdatePage = pageNumber;
+        }, this.options.duration);
+      }
+    });
+
     this.update(pageNumber, true);
   }
+  
+  private lastUpdatePage: number = 1;
 
   update(pageNumber: number, animate = false) {
     const isDouble = this.options.displayMode === 'double';
@@ -229,9 +280,19 @@ export class UI {
 
       const rotate = isFlipped ? -180 : 0;
       const rotateAbs = Math.abs(rotate);
-
-      // Dynamic Stack Volume on individual sheets is removed
-      // el.style.setProperty('--stack-width', `${stackWidth}px`);
+    
+      // Inject animation variables for the Curl effect
+      if (this.options.animationType === 'curl') {
+        const prevRotate = parseFloat(el.getAttribute('data-rotate') || '0');
+        if (prevRotate !== rotate) {
+          el.style.setProperty('--from-angle', `${prevRotate}deg`);
+          el.style.setProperty('--to-angle', `${rotate}deg`);
+          el.style.setProperty('--mid-angle', `${(prevRotate + rotate) / 2}deg`);
+          const curlDir = rotate < prevRotate ? 1 : -1;
+          el.style.setProperty('--curl-skew', `${5 * curlDir * (this.options.curlIntensity || 0.3)}deg`);
+        }
+      }
+      el.setAttribute('data-rotate', rotate.toString());
 
       // Dynamic Page Shadow (Curl)
       const shadow = el.querySelector('.page-shadow') as HTMLElement;
@@ -299,8 +360,19 @@ export class UI {
       const rotate = isFlipped ? -180 : 0;
       const rotateAbs = Math.abs(rotate);
 
-      // Dynamic Stack Volume on individual sheets is removed
-      
+      // Inject animation variables for the Curl effect
+      if (this.options.animationType === 'curl') {
+        const prevRotate = parseFloat(el.getAttribute('data-rotate') || '0');
+        if (prevRotate !== rotate) {
+          el.style.setProperty('--from-angle', `${prevRotate}deg`);
+          el.style.setProperty('--to-angle', `${rotate}deg`);
+          el.style.setProperty('--mid-angle', `${(prevRotate + rotate) / 2}deg`);
+          const curlDir = rotate < prevRotate ? 1 : -1;
+          el.style.setProperty('--curl-skew', `${5 * curlDir * (this.options.curlIntensity || 0.3)}deg`);
+        }
+      }
+      el.setAttribute('data-rotate', rotate.toString());
+
       // Dynamic Page Shadow (Curl)
       const shadow = el.querySelector('.page-shadow') as HTMLElement;
       if (shadow) {

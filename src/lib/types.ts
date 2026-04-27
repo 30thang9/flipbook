@@ -5,9 +5,12 @@ export interface FlipbookOptions {
   startPage?: number;
   showShadows?: boolean;
   displayMode?: 'single' | 'double';
+  animationType?: 'flat' | 'curl';
+  curlIntensity?: number; // 0 to 1
   staggerStep?: number;
   totalPages?: number;
   hasCover?: boolean; // Determines if the first and last generated pages are covers
+  showShine?: boolean;
   onInit?: () => void;
   onFlip?: (page: number) => void;
   pageNumbers?: {

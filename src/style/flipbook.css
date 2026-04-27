@@ -242,3 +242,65 @@
   border-radius: 4px;
 }
 
+/* --- Advanced 2.5D Page Curl Animation --- */
+
+.canva-flipbook-container.animation-curl .canva-sheet,
+.canva-flipbook-container.animation-curl .canva-page {
+  /* Use a separate property for the base transform so keyframes don't fight with xOffset */
+  transition: transform var(--flip-duration, 800ms) cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+/* Shine effect that moves across the flipping page */
+.page-curl-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  background: linear-gradient(105deg, 
+    rgba(255,255,255,0) 0%, 
+    rgba(255,255,255,0) 30%, 
+    rgba(255,255,255,0.3) 50%, 
+    rgba(255,255,255,0) 70%
+  );
+  background-size: 200% 100%;
+  background-position: 150% 0;
+}
+
+/* Secondary shadow for the fold peak */
+.page-fold-shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  background: linear-gradient(to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.1) 48%,
+    rgba(0,0,0,0.2) 50%,
+    rgba(0,0,0,0.1) 52%,
+    rgba(0,0,0,0) 100%
+  );
+  background-size: 200% 100%;
+  background-position: 150% 0;
+}
+
+/* Signal to trigger JS-assisted animation sequence */
+.animation-curl .canva-sheet.is-animating,
+.animation-curl .canva-page.is-animating {
+  z-index: 500 !important; /* Ensure the flipping page is always on top */
+}
+
+/* The actual "Curl" effect is achieved via a multi-stage transform 
+   Ideally these would be CSS Keyframes, but to keep xOffset and stacks working,
+   we apply them via JS-driven CSS variables in UI.ts */
+
+
