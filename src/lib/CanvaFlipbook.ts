@@ -45,9 +45,27 @@ export class CanvaFlipbook extends EventEmitter {
   }
 
   addPage(content: string | HTMLElement, type: 'hard' | 'soft' = 'soft', isCover: boolean = false) {
-    const page: PageData = { content, type, isCover };
+    // Auto-detect covers if not explicitly provided
+    let finalIsCover = isCover;
+    if (this.options.hasCover) {
+      if (this.pages.length === 0) finalIsCover = true;
+    }
+
+    const page: PageData = { content, type, isCover: finalIsCover };
     this.pages.push(page);
-    this.options.totalPages = this.pages.length;
+    
+    // Update the previous 'last' page cover status if it's no longer the last
+    if (this.pages.length > 1 && this.options.hasCover) {
+      const prevLast = this.pages[this.pages.length - 2];
+      if (prevLast.isCover && this.pages.length > 2) {
+        // Technically only the very last should be the back cover
+        prevLast.isCover = false;
+        this.ui.updatePageCoverStatus(this.pages.length - 1, false);
+      }
+      // Ensure the current one is marked as cover for the last page check
+      page.isCover = true;
+    }
+
     this.ui.renderPage(page, this.pages.length);
     
     if (!this.isInitializing) {

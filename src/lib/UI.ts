@@ -77,7 +77,7 @@ export class UI {
     }
 
     if (this.options.pageNumbers.enabled) {
-      this.addPageNumber(pageEl, index);
+      this.addPageNumber(pageEl, index, data);
     }
 
     this.wrapper.appendChild(pageEl);
@@ -116,7 +116,7 @@ export class UI {
     }
 
     if (this.options.pageNumbers.enabled) {
-      this.addPageNumber(side, index);
+      this.addPageNumber(side, index, data);
     }
 
     sheetEl.appendChild(side);
@@ -150,21 +150,33 @@ export class UI {
     }
   }
 
-  private addPageNumber(container: HTMLElement, index: number) {
+  updatePageCoverStatus(index: number, isCover: boolean) {
+    const isDouble = this.options.displayMode === 'double';
+    const i0 = index - 1;
+    
+    if (isDouble) {
+      const sheetIndex = Math.floor(i0 / 2);
+      const isFront = i0 % 2 === 0;
+      const sheetEl = this.pageElements[sheetIndex];
+      if (!sheetEl) return;
+      const side = sheetEl.querySelector(`.page-side.${isFront ? 'front' : 'back'}`);
+      if (side) side.classList.toggle('is-cover', isCover);
+    } else {
+      const el = this.pageElements[index - 1];
+      if (el) el.classList.toggle('is-cover', isCover);
+    }
+  }
+
+  private addPageNumber(container: HTMLElement, index: number, _data: PageData) {
     const config = this.options.pageNumbers;
     
     // Check if we should display on this page
     const startAt = config.startAt ?? 1;
     if (index < startAt) return;
     const hideOn = config.hideOnPages || [];
-    const total = this.options.totalPages || 0;
-    const shouldHide = hideOn.some(val => {
-      if (typeof val === 'number') return val === index;
-      if (val === 'first') return index === 1;
-      if (val === 'last') return index > 0 && index === total;
-      if (val === 'covers') return index === 1 || (index > 0 && index === total);
-      return false;
-    });
+    
+    // In-page specific exclusion (numeric) - Note: 'covers' and 'last' now handled by CSS or dynamic status
+    const shouldHide = hideOn.some(val => typeof val === 'number' && val === index);
     if (shouldHide) return;
 
     // Calculate the label: (current index - start index) + first number

@@ -185,6 +185,11 @@
   transform: translateZ(5px);
 }
 
+/* Hide numbers on covers */
+.is-cover .page-number {
+  display: none !important;
+}
+
 .page-number.pos-top { top: 10px; }
 .page-number.pos-bottom { bottom: 10px; }
 
