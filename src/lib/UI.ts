@@ -195,8 +195,6 @@ export class UI {
   }
 
   private updateSingle(pageNumber: number, animate: boolean) {
-    let leftCount = 0;
-    let rightCount = 0;
     this.pageElements.forEach((el, i) => {
       const step = i + 1;
       const isFlipped = step < pageNumber;
@@ -207,11 +205,11 @@ export class UI {
       let xOffset = 0;
 
       if (isFlipped) {
-        xOffset = -(leftCount * stagger);
-        leftCount++;
+        // Anchor left stack to current spread (top sheet at 0)
+        xOffset = ((pageNumber - 2) - i) * stagger;
       } else {
-        xOffset = (rightCount * stagger);
-        rightCount++;
+        // Anchor right stack to current spread (top sheet at 0)
+        xOffset = (i - (pageNumber - 1)) * stagger;
       }
 
       el.style.zIndex = isFlipped ? `${10 + i}` : `${50 - i}`;
@@ -259,9 +257,6 @@ export class UI {
       this.wrapper.style.transform = 'translateX(0)';
     }
 
-    let leftCount = 0;
-    let rightCount = 0;
-
     this.pageElements.forEach((el, i) => {
       const isFlipped = i < currentSheet;
       el.classList.toggle('flipped', isFlipped);
@@ -270,15 +265,18 @@ export class UI {
       let xOffset = 0;
 
       if (isFlipped) {
-        xOffset = -(leftCount * stagger);
-        leftCount++;
+        // Anchor left stack to center (top flipped sheet at 0)
+        // Reversed subtract ((currentSheet - 1) - i) because rotateY(-180) flips the X axis
+        xOffset = ((currentSheet - 1) - i) * stagger;
       } else {
-        xOffset = (isFrontCover && i > 0) ? 0 : (rightCount * stagger);
-        rightCount++;
+        // Anchor right stack to center (top active sheet at 0)
+        xOffset = (i - currentSheet) * stagger;
       }
 
-      // Z-index management for sheets
+      // Z-index management for sheets: Right top sheet gets priority 101, Left top gets 100
       if (i === currentSheet) {
+        el.style.zIndex = '101';
+      } else if (i === currentSheet - 1) {
         el.style.zIndex = '100';
       } else if (isFlipped) {
         el.style.zIndex = `${10 + i}`;
@@ -298,14 +296,35 @@ export class UI {
         shadow.style.opacity = `${shadowOpacity}`;
       }
 
+      const isTop = (i === currentSheet) || (i === currentSheet - 1);
       const zOffset = isFlipped ? -i : (this.pageElements.length - i);
+      
       el.style.transform = `rotateY(${rotate}deg) translateX(${xOffset}px) translateZ(${zOffset * 0.2}px)`;
       el.style.transition = animate ? `transform ${this.options.duration}ms cubic-bezier(0.645, 0.045, 0.355, 1)` : 'none';
       
+      // Aesthetic Depth: Subtle stack shadow based on depth
+      if (!isTop) {
+        const depthShadow = Math.max(0, 5 - Math.abs(zOffset)) * 2;
+        el.style.boxShadow = `${isFlipped ? 1 : -1}px 0 ${depthShadow}px rgba(0,0,0,0.1)`;
+      } else {
+        el.style.boxShadow = 'none'; // Spread lift handled by CSS
+      }
+
+      // Dynamic Spine Depth: Respond to flip angle
+      const spineShadows = el.querySelectorAll('.page-spine-shadow');
+      spineShadows.forEach((ss: any) => {
+        if (isTop) {
+          ss.style.opacity = ''; // Use CSS default (0.6)
+        } else {
+          // As page flips, gutter shadow pulses
+          const angleRad = (rotateAbs / 180) * Math.PI;
+          const dynamicOpacity = Math.sin(angleRad) * 0.3;
+          ss.style.opacity = `${dynamicOpacity}`;
+        }
+      });
+
       // Native 3D Sheet Stacking (Double Mode)
       // All sheets are visible to form the physical stack
-      const isTop = (i === currentSheet) || (i === currentSheet - 1);
-      
       el.classList.toggle('is-top-page', isTop);
       el.style.opacity = '1';
       el.style.visibility = 'visible';

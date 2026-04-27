@@ -136,18 +136,32 @@
 
 /* Only top pages show the gutter shadow */
 .is-top-page .page-spine-shadow {
-  opacity: 0.5;
+  opacity: 0.6; /* Deeper active gutter */
+}
+
+.is-top-page {
+  box-shadow: 0 0 30px rgba(0,0,0,0.1); /* Subtle spread lift */
 }
 
 /* Simple inner shadow for the spine fold */
 .page-side.front .page-spine-shadow { 
   left: 0; 
-  background: linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+  /* Multi-stop gradient for a curved fold appearance */
+  background: linear-gradient(to right, 
+    rgba(0,0,0,0.25) 0%, 
+    rgba(0,0,0,0.1) 40%, 
+    rgba(0,0,0,0) 100%
+  );
 }
 
 .page-side.back .page-spine-shadow { 
   right: 0; 
-  background: linear-gradient(to left, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+  /* Multi-stop gradient for a curved fold appearance */
+  background: linear-gradient(to left, 
+    rgba(0,0,0,0.25) 0%, 
+    rgba(0,0,0,0.1) 40%, 
+    rgba(0,0,0,0) 100%
+  );
 }
 
 .page-content {

@@ -47,6 +47,7 @@ export class CanvaFlipbook extends EventEmitter {
   addPage(content: string | HTMLElement, type: 'hard' | 'soft' = 'soft', isCover: boolean = false) {
     const page: PageData = { content, type, isCover };
     this.pages.push(page);
+    this.options.totalPages = this.pages.length;
     this.ui.renderPage(page, this.pages.length);
     
     if (!this.isInitializing) {
@@ -186,7 +187,17 @@ export class CanvaFlipbook extends EventEmitter {
     const config = this.options.pageNumbers;
     const startAt = config.startAt ?? 1;
     if (physicalIndex < startAt) return null;
-    if (config.hideOnPages?.includes(physicalIndex)) return null;
+    
+    const total = this.pages.length;
+    const hideOn = config.hideOnPages || [];
+    const shouldHide = hideOn.some(val => {
+      if (typeof val === 'number') return val === physicalIndex;
+      if (val === 'first') return physicalIndex === 1;
+      if (val === 'last') return physicalIndex > 0 && physicalIndex === total;
+      if (val === 'covers') return physicalIndex === 1 || (physicalIndex > 0 && physicalIndex === total);
+      return false;
+    });
+    if (shouldHide) return null;
 
     return physicalIndex - startAt + (config.firstNumber ?? 1);
   }
