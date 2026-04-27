@@ -1,0 +1,225 @@
+.canva-flipbook-container {
+  position: relative;
+  margin: 0 auto;
+  perspective: 2500px;
+  overflow: visible;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.canva-flipbook-container.mode-single {
+  perspective: 2000px;
+}
+
+.canva-flipbook-container.mode-double {
+  /* Double width for spreads - deeper perspective for stable shadow width */
+  perspective: 5000px;
+}
+
+.canva-flipbook-container.mode-double .canva-page {
+  width: 50%;
+  right: 0;
+  transform-origin: left center;
+}
+
+.canva-flipbook-container.mode-double .canva-page.left-side {
+  right: auto;
+  left: 50%;
+  transform-origin: left center;
+}
+
+.canva-flipbook-container.mode-double .canva-page.right-side {
+  right: 0;
+  transform-origin: left center;
+}
+
+.canva-flipbook-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.canva-sheet {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.page-side {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background: #fff;
+  background-image: linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 10%);
+  border-radius: 0 4px 4px 0;
+  /* Enhanced edge border for clear stacking visibility */
+  border-right: 1px solid rgba(0,0,0,0.15);
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.8); /* Highlight on the very edge */
+}
+
+/* Only show heavy shadows on top pages to prevent murky accumulation */
+.canva-sheet.is-top-page .page-side,
+.canva-page.is-top-page {
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.canva-sheet.is-top-page .page-side.back {
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.page-side.front {
+  transform: translateZ(1px);
+}
+
+.page-side.back {
+  transform: rotateY(180deg) translateZ(1px);
+  border-radius: 4px 0 0 4px;
+  background-image: linear-gradient(to left, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 10%);
+  border-left: 1px solid rgba(0,0,0,0.15);
+  box-shadow: inset 1px 0 0 rgba(255,255,255,0.8);
+}
+
+.canva-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  user-select: none;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+}
+
+.canva-sheet.flipped {
+  transform: rotateY(-180deg); 
+}
+
+.canva-page.hard {
+  border-left: 1px solid #ccc;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
+
+.mode-double .canva-page.left-side {
+  border-left: 2px solid #ddd; /* Spine simulation */
+}
+
+.mode-double .canva-page.right-side {
+  border-left: 1px solid #eee;
+}
+
+.canva-page::before, .page-side::before {
+  display: none; /* Removed the small ridge */
+}
+
+/* DELETED: Simulated Stacks are now handled by native 3D sheets */
+
+.page-spine-shadow {
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0; /* Hidden for stack sheets */
+  transition: opacity 0.3s;
+}
+
+/* Only top pages show the gutter shadow */
+.is-top-page .page-spine-shadow {
+  opacity: 0.5;
+}
+
+/* Simple inner shadow for the spine fold */
+.page-side.front .page-spine-shadow { 
+  left: 0; 
+  background: linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+}
+
+.page-side.back .page-spine-shadow { 
+  right: 0; 
+  background: linear-gradient(to left, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+}
+
+.page-content {
+  padding: 40px;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.page-number {
+  position: absolute;
+  padding: 5px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000; /* Absolute black */
+  background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  z-index: 999; /* Force to top */
+  pointer-events: none;
+  /* Hardware compositing to prevent transform starvation vanishing */
+  transform: translateZ(5px);
+}
+
+.page-number.pos-top { top: 10px; }
+.page-number.pos-bottom { bottom: 10px; }
+
+.page-number.align-left { left: 10px; right: auto; margin: 0; transform: translateZ(5px); }
+.page-number.align-center { left: 50%; transform: translateX(-50%) translateZ(5px); }
+.page-number.align-right { right: 10px; left: auto; margin: 0; transform: translateZ(5px); }
+
+.canva-flipbook-container.mode-double .page-side.front .page-number.align-outer { right: 10px; left: auto; }
+.canva-flipbook-container.mode-double .page-side.back .page-number.align-outer { left: 10px; right: auto; }
+
+.canva-flipbook-container.mode-double .page-side.front .page-number.align-inner { left: 10px; right: auto; }
+.canva-flipbook-container.mode-double .page-side.back .page-number.align-inner { right: 10px; left: auto; }
+
+.canva-flipbook-container.mode-single .page-number.align-outer { right: 10px; left: auto; }
+.canva-flipbook-container.mode-single .page-number.align-inner { left: 10px; right: auto; }
+
+.page-shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0) 10%
+  );
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.canva-sheet.flipped .page-shadow {
+  opacity: 1;
+}
+
+/* For better interaction */
+.canva-page:hover {
+  cursor: pointer;
+}
+
+
+/* Cover Aesthetic Settings */
+.page-side.is-cover .page-spine-shadow {
+  display: none !important;
+}
+
+.page-side.is-cover {
+  box-shadow: inset 8px 0 15px rgba(0,0,0,0.05), inset -8px 0 15px rgba(0,0,0,0.05);
+  border-radius: 4px;
+}
+
