@@ -202,6 +202,9 @@ export class CanvaFlipbook extends EventEmitter {
     return physicalIndex - startAt + (config.firstNumber ?? 1);
   }
 
+  /**
+   * Returns the total number of physical pages in the flipbook.
+   */
   getTotalPages() {
     return this.pages.length;
   }

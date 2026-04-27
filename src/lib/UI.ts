@@ -332,7 +332,7 @@ export class UI {
     });
   }
 
-  getTotalPages() {
+  getTotalSheets() {
     return this.pageElements.length;
   }
 }
